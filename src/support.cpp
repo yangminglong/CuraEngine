@@ -1078,6 +1078,13 @@ void AreaSupport::generateSupportAreasForMesh(SliceDataStorage& storage, const S
 
         support_areas[layer_idx] = layer_this;
         Progress::messageProgress(Progress::Stage::SUPPORT, layer_count * (mesh_idx + 1) - layer_idx, layer_count * storage.meshes.size());
+
+        // hanson -->
+        if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+            logError("user canceled.\n");
+            return;
+        }
+        // hanson <--
     }
 
     // Substract x/y-disallowed area from the support.

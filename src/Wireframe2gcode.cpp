@@ -89,6 +89,13 @@ void Wireframe2gcode::writeGCode()
     for (LayerIndex layer_nr = 0; layer_nr < static_cast<LayerIndex>(wireFrame.layers.size()); layer_nr++)
     {
         Progress::messageProgress(Progress::Stage::EXPORT, layer_nr+1, total_layers); // abuse the progress system of the normal mode of CuraEngine
+
+        // hanson -->
+        if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+            logError("user canceled.\n");
+            return;
+        }
+        // hanson <--
         
         WeaveLayer& layer = wireFrame.layers[layer_nr];
         

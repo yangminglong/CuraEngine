@@ -78,6 +78,8 @@ void FffGcodeWriter::writeGCode(SliceDataStorage& storage, TimeKeeper& time_keep
 
     setSupportAngles(storage);
     
+    m_total_layers = total_layers;
+
     gcode.writeLayerCountComment(total_layers);
 
     { // calculate the mesh order for each extruder
@@ -145,6 +147,13 @@ void FffGcodeWriter::writeGCode(SliceDataStorage& storage, TimeKeeper& time_keep
 
     //Store the object height for when we are printing multiple objects, as we need to clear every one of them when moving to the next position.
     max_object_height = std::max(max_object_height, storage.model_max.z);
+
+    // hanson -->
+    if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+        logError("user canceled.\n");
+        return;
+    }
+    // hanson <--
 
 
     constexpr bool force = true;

@@ -312,6 +312,24 @@ if (UNIX)
     target_link_libraries(_CuraEngine pthread)
 endif()
 
+# hanson 添加  -->
+set(CuraEngineForServer_Src src/CuraEngineForServer/CuraEngineForServer.cpp)
+add_library(CuraEngineForServer STATIC ${CuraEngineForServer_Src} )
+target_link_libraries(CuraEngineForServer _CuraEngine)
+# hanson 添加 <--
+
+# hanson 添加  -->
+add_executable(CuraEngineForServerTestApp src/CuraEngineForServer/TestApp/main.cpp) # Then compile main.cpp as separate executable, and link the library to it.
+target_link_libraries(CuraEngineForServerTestApp _CuraEngine CuraEngineForServer)
+set_target_properties(CuraEngineForServerTestApp PROPERTIES COMPILE_DEFINITIONS "VERSION=\"${CURA_ENGINE_VERSION}\"")
+# hanson 添加 <--
+
+# hanson 添加  -->
+#add_executable(CuraEngineForServerTestMultApp src/CuraEngineForServer/TestMultApp/main.cpp) # Then compile main.cpp as separate executable, and link the library to it.
+#target_link_libraries(CuraEngineForServerTestMultApp _CuraEngine CuraEngineForServer)
+#set_target_properties(CuraEngineForServerTestMultApp PROPERTIES COMPILE_DEFINITIONS "VERSION=\"${CURA_ENGINE_VERSION}\"")
+# hanson 添加 <--
+
 if (NOT WIN32)
   add_executable(CuraEngine src/main.cpp) # Then compile main.cpp as separate executable, and link the library to it.
 else()

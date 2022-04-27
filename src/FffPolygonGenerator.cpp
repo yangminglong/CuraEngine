@@ -61,6 +61,12 @@ bool FffPolygonGenerator::generateAreas(SliceDataStorage& storage, MeshGroup* me
 
     slices2polygons(storage, timeKeeper);
 
+    // hanson -->
+    if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+        return false;
+    }
+    // hanson <--
+
     return true;
 }
 
@@ -210,6 +216,12 @@ bool FffPolygonGenerator::sliceModel(MeshGroup* meshgroup, TimeKeeper& timeKeepe
         */
 
         Progress::messageProgress(Progress::Stage::SLICING, mesh_idx + 1, meshgroup->meshes.size());
+
+        // hanson -->
+        if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+            return false;
+        }
+        // hanson <--
     }
 
     // Clear the mesh face and vertex data, it is no longer needed after this point, and it saves a lot of memory.
@@ -253,6 +265,12 @@ bool FffPolygonGenerator::sliceModel(MeshGroup* meshgroup, TimeKeeper& timeKeepe
     storage.meshes.reserve(slicerList.size()); // causes there to be no resize in meshes so that the pointers in sliceMeshStorage._config to retraction_config don't get invalidated.
     for (unsigned int meshIdx = 0; meshIdx < slicerList.size(); meshIdx++)
     {
+        // hanson -->
+        if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+            return false;
+        }
+        // hanson <--
+
         Slicer* slicer = slicerList[meshIdx];
         Mesh& mesh = scene.current_mesh_group->meshes[meshIdx];
 
@@ -322,6 +340,12 @@ bool FffPolygonGenerator::sliceModel(MeshGroup* meshgroup, TimeKeeper& timeKeepe
         delete slicerList[meshIdx];
 
         Progress::messageProgress(Progress::Stage::PARTS, meshIdx + 1, slicerList.size());
+
+        // hanson -->
+        if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+            return false;
+        }
+        // hanson <--
     }
     return true;
 }
@@ -364,6 +388,12 @@ void FffPolygonGenerator::slices2polygons(SliceDataStorage& storage, TimeKeeper&
     {
         processBasicWallsSkinInfill(storage, mesh_order_idx, mesh_order, inset_skin_progress_estimate);
         Progress::messageProgress(Progress::Stage::INSET_SKIN, mesh_order_idx + 1, storage.meshes.size());
+
+        // hanson -->
+        if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+            return ;
+        }
+        // hanson <--
     }
 
     const Settings& mesh_group_settings = Application::getInstance().current_slice->scene.current_mesh_group->settings;

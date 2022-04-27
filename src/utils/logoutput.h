@@ -4,8 +4,12 @@
 #ifndef LOGOUTPUT_H
 #define LOGOUTPUT_H
 
+#include <functional> // hanson
+
 namespace cura {
 
+extern std::function<void(std::shared_ptr<std::string>)> errorHandler;
+extern std::function<bool()> isKeepingHandler;
 /*
  * \brief Increase verbosity level by 1.
  */

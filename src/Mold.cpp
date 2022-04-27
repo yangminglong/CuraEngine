@@ -10,6 +10,7 @@
 #include "slicer.h"
 #include "settings/types/Ratio.h"
 #include "utils/IntPoint.h"
+#include "utils/logoutput.h"
 
 namespace cura
 {
@@ -49,6 +50,12 @@ void Mold::process(std::vector<Slicer*>& slicer_list)
     mold_outline_above_per_mesh.resize(slicer_list.size());
     for (int layer_nr = layer_count - 1; layer_nr >= 0; layer_nr--)
     {
+        // hanson -->
+        if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+            break;
+        }
+        // hanson <--
+
         Polygons all_original_mold_outlines; // outlines of all models for which to generate a mold (insides of all molds)
 
         // first generate outlines

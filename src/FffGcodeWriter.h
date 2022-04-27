@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <optional>
+#include <sstream>
 #include "FanSpeedLayerTime.h"
 #include "gcodeExport.h"
 #include "LayerPlanBuffer.h"
@@ -36,6 +37,8 @@ class FffGcodeWriter : public NoCopy
     friend class Scene; // cause WireFrame2Gcode uses the member [gcode] (TODO)
     friend class FffProcessor; //Because FffProcessor exposes finalize (TODO)
 private:
+    size_t m_total_layers; // JasonChen
+
     coord_t max_object_height; //!< The maximal height of all previously sliced meshgroups, used to avoid collision when moving to the next meshgroup to print.
 
     /*
@@ -81,6 +84,16 @@ private:
     std::vector<FanSpeedLayerTimeSettings> fan_speed_layer_time_settings_per_extruder; //!< The settings used relating to minimal layer time and fan speeds. Configured for each extruder.
 
 public:
+
+    // hanson -->
+    struct SlicedMeshInfo {
+        AABB3D boundInfo;     // total_bounding_box
+        float totalFilamentUsed; // getTotalFilamentUsed
+        int totalLayers;         // m_total_layers
+        double totalTimes;          // getSumTotalPrintTimes
+    };
+    // hanson <--
+
     /*
      * \brief Construct a g-code writer.
      *
@@ -106,6 +119,22 @@ public:
         }
         return false;
     }
+    
+    //JasonChen
+    void setTargetStream(std::stringstream* stream)
+    {
+        gcode.setOutputStream(stream);
+    }
+
+    void getSlicedResults(SlicedMeshInfo& info)
+    {
+        info.boundInfo = gcode.getAABB();
+        info.totalLayers = m_total_layers;
+        info.totalTimes = gcode.getSumTotalPrintTimes();
+
+        info.totalFilamentUsed = gcode.getTotalFilamentUsed();
+    }
+    //JasonChen
 
     /*!
      * Set the target to write gcode to: an output stream.

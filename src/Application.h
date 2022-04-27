@@ -68,6 +68,8 @@ public:
      */
     void run(const size_t argc, char** argv);
 
+    void initCommunication() { if (communication == nullptr) slice();  } // hanson
+
 protected:
 #ifdef ARCUS
     /*!

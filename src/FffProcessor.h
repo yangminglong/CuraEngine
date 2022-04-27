@@ -8,6 +8,7 @@
 #include "FffPolygonGenerator.h"
 #include "utils/gettime.h"
 #include "utils/NoCopy.h"
+#include <memory>
 
 #define SHOW_ALL_SETTINGS true
 
@@ -71,6 +72,13 @@ public:
     {
         return gcode_writer.setTargetStream(stream);
     }
+
+    // hanson -->
+    void setTargetStream(std::stringstream* stream)
+    {
+        return gcode_writer.setTargetStream(stream);
+    }
+    // hanson <--
 
     /*!
      * Get the total extruded volume for a specific extruder in mm^3

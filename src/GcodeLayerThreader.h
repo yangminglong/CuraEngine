@@ -135,6 +135,13 @@ void GcodeLayerThreader<T>::run()
             {
                 break;
             }
+
+            // hanson -->
+            if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+                break;
+            }
+            // hanson <--
+
             act();
         }
     }

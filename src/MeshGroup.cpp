@@ -284,4 +284,171 @@ bool loadMeshIntoMeshGroup(MeshGroup* meshgroup, const char* filename, const FMa
     return false;
 }
 
+// hanson -->
+using namespace std; // hanson
+
+//JasonChen
+void* fgets_(char* ptr, size_t len, std::stringstream* ss)
+{
+
+    while (len > 0 && 1 != ss->eof())
+    {
+        ss->read(ptr, 1);
+        if (*ptr == '\n' || *ptr == '\r')
+        {
+            *ptr = '\0';
+            return ptr;
+        }
+        ptr++;
+        len--;
+    }
+    return nullptr;
+}
+//JasonChen
+
+bool loadMeshSTLFromStream_ascii(Mesh* mesh, std::stringstream* ss, const FMatrix4x3& matrix)
+{
+//JasonChen
+    char buffer[1024];
+    FPoint3 vertex;
+    int n = 0;
+    Point3 v0(0, 0, 0), v1(0, 0, 0), v2(0, 0, 0);
+    while (fgets_(buffer, sizeof(buffer), ss))
+    {
+        if (sscanf(buffer, " vertex %f %f %f", &vertex.x, &vertex.y, &vertex.z) == 3)
+        {
+            n++;
+            switch (n)
+            {
+            case 1:
+                v0 = matrix.apply(vertex);
+                break;
+            case 2:
+                v1 = matrix.apply(vertex);
+                break;
+            case 3:
+                v2 = matrix.apply(vertex);
+                mesh->addFace(v0, v1, v2);
+                n = 0;
+                break;
+            }
+        }
+    }
+    mesh->finish();
+    return true;
+    //JasonChen
+}
+
+bool loadMeshSTLFromStream_binary(Mesh* mesh, std::stringstream* ss, const FMatrix4x3& matrix)
+{
+    //{ stringstream
+    ss->seekg(0, std::ios::end);
+    long long file_size_ss = ss->tellg();
+    size_t face_count_ss = (file_size_ss - 80 - sizeof(uint32_t)) / 50;
+
+    //reset
+    ss->seekg(0, std::ios::beg);
+    char buffer[80];
+
+    if (!ss->read(buffer, sizeof(buffer))) {
+        logError("JasonChen : loadMeshSTL_binary error!!!");
+        return false;
+    }
+
+    uint32_t reported_face_count;
+    if (!ss->read((char*)&reported_face_count, sizeof(uint32_t))) {
+        logError("JasonChen : loadMeshSTL_binary error!!!");
+        return false;
+    }
+    if (reported_face_count != face_count_ss)
+    {
+        logWarning("Face count reported by file (%s) is not equal to actual face count (%s). File could be corrupt!\n", std::to_string(reported_face_count).c_str(), std::to_string(face_count_ss).c_str());
+    }
+    //For each face read:
+    //float(x,y,z) = normal, float(X,Y,Z)*3 = vertexes, uint16_t = flags
+    // Every Face is 50 Bytes: Normal(3*float), Vertices(9*float), 2 Bytes Spacer
+    mesh->faces.reserve(face_count_ss);
+    mesh->vertices.reserve(face_count_ss);
+    for (unsigned int i = 0; i < face_count_ss; i++)
+    {
+        if (!ss->read(buffer, 50 * sizeof(char))) {
+            logError("JasonChen : loadMeshSTLFromStream_binary error!!!");
+            return false;
+        }
+        float* v = ((float*)buffer) + 3;
+        Point3 v0 = matrix.apply(FPoint3(v[0], v[1], v[2]));
+        Point3 v1 = matrix.apply(FPoint3(v[3], v[4], v[5]));
+        Point3 v2 = matrix.apply(FPoint3(v[6], v[7], v[8]));
+        mesh->addFace(v0, v1, v2);
+    }
+    //{ stringstream
+
+    mesh->finish();
+    return true;
+    //JasonChen
+}
+
+bool loadMeshSTLFromStream(Mesh* mesh, std::stringstream* ss, const FMatrix4x3& matrix)
+{
+    //Skip any whitespace at the beginning of the file.
+    unsigned long long num_whitespace = 0; //Number of whitespace characters.
+    unsigned char whitespace;
+    if (!ss->read((char*)&whitespace, 1)) {
+        logError("JasonChen : loadMeshSTL error!!!");
+        return false;
+    }
+
+    while (isspace(whitespace))
+    {
+        num_whitespace++;
+        if (!ss->read((char*)&whitespace, 1)) {
+            logError("JasonChen : loadMeshSTL error!!!");
+            return false;
+        }
+    }
+    ss->seekg(num_whitespace, std::ios::beg);
+
+    char buffer[6];
+    if (!ss->read(buffer, sizeof(char) * 5)) {
+        logError("JasonChen : loadMeshSTL error!!!");
+        return false;
+    }
+
+    buffer[5] = '\0';
+    if (stringcasecompare(buffer, "solid") == 0)
+    {
+        bool load_success = loadMeshSTLFromStream_ascii(mesh, ss, matrix);
+        if (!load_success)
+            return false;
+
+        // This logic is used to handle the case where the file starts with
+        // "solid" but is a binary file.
+        if (mesh->faces.size() < 1)
+        {
+            mesh->clear();
+            return loadMeshSTLFromStream_binary(mesh, ss, matrix);
+        }
+        return true;
+    }
+    return loadMeshSTLFromStream_binary(mesh, ss, matrix);
+    //JasonChen
+
+}
+
+bool loadMeshStreamInfoMeshGroup(MeshGroup* meshgroup, stringstream* fileStream, const FMatrix4x3& transformation, Settings& object_parent_settings)
+{
+    TimeKeeper load_timer;
+    Mesh mesh(object_parent_settings);
+    if (loadMeshSTLFromStream(&mesh, fileStream, transformation)) //Load it! If successful...
+    {
+        meshgroup->meshes.push_back(mesh);
+
+        log("loading mesh took %.3f seconds\n", load_timer.restart());
+        return true;
+    }
+    logWarning("Unable to load mesh from stream.");
+    return false;
+}
+// hanson <--
+
 }//namespace cura

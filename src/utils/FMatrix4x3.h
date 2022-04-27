@@ -41,6 +41,8 @@ public:
      */
     FMatrix4x3();
 
+    FMatrix4x3(double _m[4][3]); // hanson
+
     /*!
      * Apply this transformation to a coordinate.
      *

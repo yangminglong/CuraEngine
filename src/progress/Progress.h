@@ -5,9 +5,12 @@
 #define PROGRESS_H
 
 #include <string>
+#include <functional> // hanson
 
 namespace cura
 {
+
+extern std::function<void(int progress)> progressHandler; // hanson
 
 class TimeKeeper;
 

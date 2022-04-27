@@ -231,6 +231,10 @@ public:
 
     void setOutputStream(std::ostream* stream);
 
+    void setOutputStream(std::stringstream* ss); // Hanson
+
+    AABB3D getAABB(); // Hanson
+
     bool getExtruderIsUsed(const int extruder_nr) const; //!< return whether the extruder has been used throughout printing all meshgroup up till now
 
     Point getGcodePos(const coord_t x, const coord_t y, const int extruder_train) const;
@@ -273,6 +277,8 @@ public:
      * \return total filament printed in mm^3
      */
     double getTotalFilamentUsed(size_t extruder_nr);
+
+    double getTotalFilamentUsed(); // hanson
 
     /*!
      * Get the total estimated print time in seconds for each feature

@@ -90,6 +90,13 @@ void Weaver::weave(MeshGroup* meshgroup)
         {
             Progress::messageProgress(Progress::Stage::INSET_SKIN, layer_idx+1, layer_count); // abuse the progress system of the normal mode of CuraEngine
             
+            // hanson -->
+            if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+                logError("user canceled.\n");
+                return;
+            }
+            // hanson <--
+
             Polygons parts1;
             for (cura::Slicer* slicer : slicerList)
                 parts1.add(slicer->layers[layer_idx].polygons);
@@ -123,6 +130,13 @@ void Weaver::weave(MeshGroup* meshgroup)
         for (unsigned int layer_idx = 0; layer_idx < wireFrame.layers.size(); layer_idx++)
         {
             Progress::messageProgress(Progress::Stage::SUPPORT, layer_idx+1, wireFrame.layers.size()); // abuse the progress system of the normal mode of CuraEngine
+
+            // hanson -->
+            if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+                logError("user canceled.\n");
+                return;
+            }
+            // hanson <--
             
             WeaveLayer& layer = wireFrame.layers[layer_idx];
             

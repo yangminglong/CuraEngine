@@ -288,6 +288,19 @@ void GCodeExport::setOutputStream(std::ostream* stream)
     *output_stream << std::fixed;
 }
 
+// hanson -->
+void GCodeExport::setOutputStream(std::stringstream* ss) //JasonChen
+{
+	output_stream = ss;
+	*output_stream << std::fixed;
+}
+
+AABB3D GCodeExport::getAABB()
+{
+    return total_bounding_box;
+}
+// hanson <--
+
 bool GCodeExport::getExtruderIsUsed(const int extruder_nr) const
 {
     assert(extruder_nr >= 0);
@@ -451,6 +464,16 @@ double GCodeExport::getTotalFilamentUsed(size_t extruder_nr)
         return extruder_attr[extruder_nr].totalFilament + getCurrentExtrudedVolume();
     return extruder_attr[extruder_nr].totalFilament;
 }
+
+// hanson -->
+double GCodeExport::getTotalFilamentUsed()
+{
+    double mat = 0;
+    for (int n = 0; n < MAX_EXTRUDERS; n++)
+        mat += getTotalFilamentUsed(n);
+    return mat;
+}
+// hanson <--
 
 std::vector<Duration> GCodeExport::getTotalPrintTimePerFeature()
 {

@@ -203,6 +203,13 @@ void TreeSupport::drawCircles(SliceDataStorage& storage, const std::vector<std::
             const double progress_current = completed * PROGRESS_WEIGHT_AREAS;
             const double progress_total = completed * PROGRESS_WEIGHT_AREAS;
             Progress::messageProgress(Progress::Stage::SUPPORT, progress_contact_nodes + progress_current, progress_contact_nodes + progress_total);
+
+            // hanson -->
+            if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+                logError("user canceled.\n");
+                return;
+            }
+            // hanson <--
         }
     });
 }
@@ -463,6 +470,13 @@ void TreeSupport::dropNodes(std::vector<std::vector<Node*>>& contact_nodes)
         const double progress_current = (contact_nodes.size() - layer_nr) * PROGRESS_WEIGHT_DROPDOWN;
         const double progress_total = contact_nodes.size() * PROGRESS_WEIGHT_DROPDOWN + contact_nodes.size() * PROGRESS_WEIGHT_AREAS;
         Progress::messageProgress(Progress::Stage::SUPPORT, progress_current, progress_total);
+
+        // hanson -->
+        if (isKeepingHandler != nullptr && isKeepingHandler() == false) {
+            logError("user canceled.\n");
+            return;
+        }
+        // hanson <--
     }
 
     for (Node *node : to_free_node_set)

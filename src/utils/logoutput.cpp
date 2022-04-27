@@ -7,7 +7,11 @@
 #endif // _OPENMP
 #include "logoutput.h"
 
+
 namespace cura {
+
+std::function<void(std::shared_ptr<std::string>)> errorHandler = nullptr;
+std::function<bool()> isKeepingHandler = nullptr;
 
 static int verbose_level;
 static bool progressLogging;
@@ -22,6 +26,25 @@ void enableProgressLogging()
     progressLogging = true;
 }
 
+int std_string_format(std::shared_ptr<std::string> str, const char* format, ...) {
+    std::string tmp;
+
+    va_list marker;
+    va_start(marker, format);
+
+    size_t num = _vscprintf(format, marker);
+
+    if (num >= tmp.capacity())
+        tmp.reserve(num + 1);
+
+    vsprintf_s((char*)tmp.data(), tmp.capacity(), format, marker);
+
+    va_end(marker);
+
+    *str = tmp.c_str();
+    return str->size();
+}
+
 void logError(const char* fmt, ...)
 {
     va_list args;
@@ -31,6 +54,12 @@ void logError(const char* fmt, ...)
         fprintf(stderr, "[ERROR] ");
         vfprintf(stderr, fmt, args);
         fflush(stderr);
+
+        if (errorHandler) {
+            std::shared_ptr<std::string> desc = std::make_shared<std::string>();
+            std_string_format(desc, fmt, args);
+            errorHandler(desc);
+        }
     }
     va_end(args);
 }

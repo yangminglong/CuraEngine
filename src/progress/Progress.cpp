@@ -54,10 +54,18 @@ void Progress::init()
     total_timing = accumulated_time;
 }
 
+std::function<void(int progress)> progressHandler = nullptr; // hanson
+
 void Progress::messageProgress(Progress::Stage stage, int progress_in_stage, int progress_in_stage_max)
 {
     float percentage = calcOverallProgress(stage, float(progress_in_stage) / float(progress_in_stage_max));
     Application::getInstance().communication->sendProgress(percentage);
+
+    // hanson -->
+    if (progressHandler != nullptr) {
+        progressHandler(percentage*100);
+    }
+    // hanson <--
 
     logProgress(names[(int)stage].c_str(), progress_in_stage, progress_in_stage_max, percentage);
 }
