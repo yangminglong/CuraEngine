@@ -67,7 +67,7 @@ void Progress::messageProgress(Progress::Stage stage, int progress_in_stage, int
     }
     // hanson <--
 
-    logProgress(names[(int)stage].c_str(), progress_in_stage, progress_in_stage_max, percentage);
+    //logProgress(names[(int)stage].c_str(), progress_in_stage, progress_in_stage_max, percentage); //JasonChen
 }
 
 void Progress::messageProgressStage(Progress::Stage stage, TimeKeeper* time_keeper)

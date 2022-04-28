@@ -10,6 +10,7 @@
 //JasonChen -->
 #include <fstream> 
 #include <sstream>
+#include <thread>
 //JasonChen <--
 
 #include "../../Application.h"
@@ -31,7 +32,7 @@ namespace cura
 
 }//namespace cura
 
-// ´´½¨²âÊÔÓÃÀı£ºÓÃ»§ÇĞÆ¬²ÎÊı
+// åˆ›å»ºæµ‹è¯•ç”¨ä¾‹ï¼šç”¨æˆ·åˆ‡ç‰‡å‚æ•°
 void initSliceParam(string& sliceParam) 
 {
     sliceParam = R""({
@@ -41,11 +42,11 @@ void initSliceParam(string& sliceParam)
     })"";
 }
 
-// ´´½¨²âÊÔÓÃÀı£ºÇĞÆ¬ÎÄ¼şÊı¾İÁ÷
+// åˆ›å»ºæµ‹è¯•ç”¨ä¾‹ï¼šåˆ‡ç‰‡æ–‡ä»¶æ•°æ®æµ
 void initModel(shared_ptr<stringstream>& model) 
 {
     ifstream file;
-    file.open("D:/Users/Administrator/Documents/GitHub/CuraEngine/src/CuraEngineForServer/TestApp/0bunnyr.stl", ios::in | ios::binary);
+    file.open("D:/workspace/CuraEngine_msvc2019/test/__0bunnyr.stl", ios::in | ios::binary);
     if (!file.is_open()) {
         cout << "file open failed" << endl;
         return;
@@ -55,33 +56,33 @@ void initModel(shared_ptr<stringstream>& model)
     (*model) << file.rdbuf();
     file.close();
 
-    cout << (*model).str() << endl;
+    //cout << (*model).str() << endl;
 }
 
 
-// ÑéÖ¤ÇĞÆ¬½á¹û£ºÎÄ¼şĞÅÏ¢
+// éªŒè¯åˆ‡ç‰‡ç»“æœï¼šæ–‡ä»¶ä¿¡æ¯
 void showDesc(shared_ptr<string> desc) {
-    cout << "\n--------------shared_ptr<string> desc------------------------" << endl;
-    cout << *desc << endl;
-    cout << "--------------shared_ptr<string> desc------------------------\n" << endl;
+    //cout << "\n--------------shared_ptr<string> desc------------------------" << endl;
+    //cout << *desc << endl;
+    //cout << "--------------shared_ptr<string> desc------------------------\n" << endl;
 }
 
-// ÑéÖ¤ÇĞÆ¬½á¹û£ºgcodeÊı¾İÁ÷
+// éªŒè¯åˆ‡ç‰‡ç»“æœï¼šgcodeæ•°æ®æµ
 void saveToGCodeFile(shared_ptr<stringstream> sliced)
 {
-    cout << (*sliced).str() << endl;
+    //cout << (*sliced).str() << endl;
 }
 
 
 void initSliceInterface(SliceInterface* _interface)
 {
-    // ³õÊ¼»¯²ÎÊı-¶ÁÈ¡ÇĞÆ¬ÎÄ¼ş
+    // åˆå§‹åŒ–å‚æ•°-è¯»å–åˆ‡ç‰‡æ–‡ä»¶
     initSliceParam(_interface->sliceParam);
 
-    // ³õÊ¼»¯²ÎÊı-¶ÁÈ¡ÇĞÆ¬ÎÄ¼ş
+    // åˆå§‹åŒ–å‚æ•°-è¯»å–åˆ‡ç‰‡æ–‡ä»¶
     initModel(_interface->model);
 
-    // ³õÊ¼»¯²ÎÊı-Ä£ĞÍ¾ØÕó
+    // åˆå§‹åŒ–å‚æ•°-æ¨¡å‹çŸ©é˜µ
     _interface->matrix[0][0] = 1.0;
     _interface->matrix[1][0] = 0.0;
     _interface->matrix[2][0] = 0.0;
@@ -95,26 +96,26 @@ void initSliceInterface(SliceInterface* _interface)
     _interface->matrix[2][2] = 1.0;
     _interface->matrix[3][2] = 0.0;
 
-    // ³õÊ¼»¯½ø¶È·´À¡
+    // åˆå§‹åŒ–è¿›åº¦åé¦ˆ
     _interface->progressHandler = [](int progress) {
-        cout << "progress: " << progress;
+        cout << "progress: " << progress << endl;
     };
 
-    // ³õÊ¼»¯ÔËĞĞ¿ØÖÆ
+    // åˆå§‹åŒ–è¿è¡Œæ§åˆ¶
     _interface->isKeepingHandler = []() {
         return true;
     };
 
-    // ³õÊ¼»¯´íÎó·´À¡
+    // åˆå§‹åŒ–é”™è¯¯åé¦ˆ
     _interface->errorHandler = [](shared_ptr<string> err) {
         cout << "error: " << err;
     };
 
     _interface->slicedHandler = [](shared_ptr<stringstream> sliced, shared_ptr<string> desc){
-        // ÏÔÊ¾ÇĞÆ¬½á¹ûÎÄ¼şĞÅÏ¢
+        // æ˜¾ç¤ºåˆ‡ç‰‡ç»“æœæ–‡ä»¶ä¿¡æ¯
         showDesc(desc);
 
-        // ±£´ægcodeÎÄ¼ş
+        // ä¿å­˜gcodeæ–‡ä»¶
         saveToGCodeFile(sliced);
     };
 }
@@ -133,12 +134,27 @@ int main(int argc, char** argv)
 #endif
     cerr << boolalpha;
 
-    // ³õÊ¼»¯Êı¾İ
-    shared_ptr<SliceInterface> sliceInterface = make_shared<SliceInterface>();
-    initSliceInterface(sliceInterface.get());
-    
-    // ¿ªÊ¼ÇĞÆ¬
-    startSlicer(sliceInterface.get());
+    auto slice_task1 = []() {
+        // åˆå§‹åŒ–æ•°æ®
+        shared_ptr<SliceInterface> sliceInterface = make_shared<SliceInterface>();
+        initSliceInterface(sliceInterface.get());
+        // å¼€å§‹åˆ‡ç‰‡
+        startSlicer(sliceInterface.get());
+    };
+    thread slice_thread1(slice_task1);
+    if(slice_thread1.joinable())
+        slice_thread1.join();
+
+    auto slice_task2 = []() {
+        // åˆå§‹åŒ–æ•°æ®
+        shared_ptr<SliceInterface> sliceInterface = make_shared<SliceInterface>();
+        initSliceInterface(sliceInterface.get());
+        // å¼€å§‹åˆ‡ç‰‡
+        startSlicer(sliceInterface.get());
+    };
+    thread slice_thread2(slice_task2);
+    if (slice_thread2.joinable())
+        slice_thread2.join();
 
     return 0;
 }

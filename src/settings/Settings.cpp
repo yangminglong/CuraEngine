@@ -609,7 +609,7 @@ const std::string Settings::getAllSettingsString() const
     for (const std::pair<std::string, std::string> pair : settings)
     {
         char buffer[4096];
-        snprintf(buffer, 4096, " -s %s=\"%s\"", pair.first.c_str(), Escaped{pair.second.c_str()}.str);
+        //snprintf(buffer, 4096, " -s %s=\"%s\"", pair.first.c_str(), Escaped{pair.second.c_str()}.str); JasonChen
         sstream << buffer;
     }
     return sstream.str();
