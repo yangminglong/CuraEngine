@@ -7,7 +7,7 @@ project(CuraEngine)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-option(ENABLE_ARCUS "Enable support for ARCUS" ON)
+option(ENABLE_ARCUS "Enable support for ARCUS" OFF)
 
 if (MSVC)
     option(MSVC_STATIC_RUNTIME "Link the MSVC runtime statically" OFF)
@@ -63,6 +63,8 @@ if(SET_RPATH)
     endif()
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}")
 endif()
+
+
 
 set(CURA_ENGINE_VERSION "master" CACHE STRING "Version name of Cura")
 
@@ -133,6 +135,10 @@ else()
     include_directories("${CMAKE_CURRENT_BINARY_DIR}" libs libs/clipper)
     add_library(clipper STATIC libs/clipper/clipper.cpp)
 endif()
+
+set_target_properties(clipper 
+  PROPERTIES PUBLIC_HEADER "libs/clipper/clipper.hpp"
+  )
 
 set(engine_SRCS # Except main.cpp.
     src/Application.cpp
@@ -294,7 +300,12 @@ if (ENABLE_ARCUS)
     target_link_libraries(_CuraEngine Arcus)
 endif ()
 
-set_target_properties(_CuraEngine PROPERTIES COMPILE_DEFINITIONS "VERSION=\"${CURA_ENGINE_VERSION}\"")
+set_target_properties(_CuraEngine 
+  PROPERTIES COMPILE_DEFINITIONS "VERSION=\"${CURA_ENGINE_VERSION}\""
+)
+set_target_properties(_CuraEngine 
+  PROPERTIES PUBLIC_HEADER "src/utils/logoutput.h"
+)
 
 if(WIN32)
   message(STATUS "Using windres")
@@ -316,12 +327,14 @@ endif()
 set(CuraEngineForServer_Src src/CuraEngineForServer/CuraEngineForServer.cpp)
 add_library(CuraEngineForServer STATIC ${CuraEngineForServer_Src} )
 target_link_libraries(CuraEngineForServer _CuraEngine)
+set_target_properties(CuraEngineForServer 
+  PROPERTIES PUBLIC_HEADER "src/CuraEngineForServer/CuraEngineForServer.h"
+  )
 # hanson 添加 <--
 
 # hanson 添加  -->
-add_executable(CuraEngineForServerTestApp src/CuraEngineForServer/TestApp/main.cpp) # Then compile main.cpp as separate executable, and link the library to it.
-target_link_libraries(CuraEngineForServerTestApp _CuraEngine CuraEngineForServer)
-set_target_properties(CuraEngineForServerTestApp PROPERTIES COMPILE_DEFINITIONS "VERSION=\"${CURA_ENGINE_VERSION}\"")
+#add_executable(CuraEngineForServerTestApp src/CuraEngineForServer/TestApp/main.cpp) # Then compile main.cpp as separate executable, and link the library to it.
+#target_link_libraries(CuraEngineForServerTestApp _CuraEngine CuraEngineForServer)
 # hanson 添加 <--
 
 # hanson 添加  -->
@@ -399,9 +412,19 @@ if (BUILD_TESTS)
     endforeach()
 endif()
 
+
 # Installing CuraEngine.
 include(GNUInstallDirs)
-install(TARGETS CuraEngine DESTINATION "${CMAKE_INSTALL_BINDIR}")
+
+install(TARGETS _CuraEngine DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+install(TARGETS clipper DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+#install(TARGETS CuraEngine DESTINATION "${CMAKE_INSTALL_BINDIR}")
+install(TARGETS CuraEngineForServer DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+
+install(TARGETS _CuraEngine PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/_CuraEngine)
+install(TARGETS clipper PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/clipper)
+install(TARGETS CuraEngineForServer PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CuraEngineForServer)
+
 # For MinGW64 cross compiling on Debian, we create a ZIP package instead of a DEB
 # Because it's the Windows build system that should install the files.
 if (CMAKE_CROSSCOMPILING AND CMAKE_SYSTEM_NAME MATCHES "Windows")
